@@ -1,0 +1,23 @@
+# System & Network Inspector
+
+A simple Python tool that analyzes system and network activity.
+
+## Features
+
+- Displays system information (user, OS, hostname)
+- Shows CPU and RAM usage
+- Lists running processes
+- Displays network information (IP, hostname)
+- Shows active network connections
+- Detects unusual ports (basic security check)
+
+## Technologies Used
+
+- Python
+- psutil
+- socket
+- platform
+
+## How to Use
+
+Run the program:
