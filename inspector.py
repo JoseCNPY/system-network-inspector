@@ -182,16 +182,57 @@ def save_report(report_lines):
     print(f"Report saved to {filename}")
 
 
+def get_top_cpu_processes(limit=5):
+    print("TOP CPU PROCESSES")
+    print("-" * 50)
+
+    processes = []
+
+    for process in psutil.process_iter(["pid", "name"]):
+        try:
+            cpu = process.cpu_percent(interval=0.1)
+
+            processes.append({
+                "pid": process.info["pid"],
+                "name": process.info["name"],
+                "cpu": cpu
+            })
+
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+
+    processes.sort(key=lambda x: x["cpu"], reverse=True)
+
+    for process in processes[:limit]:
+        print(
+            f"PID: {process['pid']} | "
+            f"Name: {process['name']} | "
+            f"CPU: {process['cpu']}%"
+        )
+
+    print("=" * 50)
+
 def main():
     report_lines = []
 
     get_system_info()
     cpu_usage, ram_usage = get_resources_usage()
+    get_top_cpu_processes()
     get_running_processes()
     get_network_info()
-    get_active_connections()
 
-    unusual_ports = detect_suspicious_connections()
+    advanced_scan = input(
+        "Run advanced network scan? This may be slower on macOS. (y/n): "
+    ).lower().strip()
+
+    if advanced_scan == "y":
+        get_active_connections()
+        unusual_ports = detect_suspicious_connections()
+    else:
+        print("Skipping advanced network scan.")
+        print("=" * 50)
+        unusual_ports = 0
+
     risk = calculate_risk_score(cpu_usage, ram_usage, unusual_ports)
 
     print(f"Risk Level: {risk}")
@@ -201,6 +242,7 @@ def main():
     report_lines.append(f"Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     report_lines.append(f"CPU Usage: {cpu_usage}%")
     report_lines.append(f"RAM Usage: {ram_usage}%")
+    report_lines.append(f"Advanced Network Scan: {'Yes' if advanced_scan == 'y' else 'No'}")
     report_lines.append(f"Unusual Ports Detected: {unusual_ports}")
     report_lines.append(f"Risk Level: {risk}")
 
