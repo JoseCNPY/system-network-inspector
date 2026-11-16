@@ -1,23 +1,43 @@
 # System & Network Inspector
 
-A simple Python tool that analyzes system and network activity.
+A Python command-line learning project for viewing local system resource usage, processes, and network connections. It uses `psutil` for system diagnostics. **This is not a malware detector, vulnerability scanner, or validated security risk assessment.**
 
 ## Features
 
-- Displays system information (user, OS, hostname)
-- Shows CPU and RAM usage
-- Lists running processes
-- Displays network information (IP, hostname)
-- Shows active network connections
-- Detects unusual ports (basic security check)
+- Reports local OS, user, hostname, and hardware architecture
+- Shows CPU and memory usage and processes
+- Lists up to ten active IP network connections when access is available
+- Optionally flags established connections to destination ports not in a small reference list for **manual review**
+- Saves a summary of sampled resource usage and a **heuristic diagnostic review priority** to `Reports/`
 
-## Technologies Used
+## Requirements
 
-- Python
-- psutil
-- socket
-- platform
+- Python 3
+- `psutil` (`python -m pip install psutil`)
 
-## How to Use
+## Run
 
-Run the program:
+```bash
+python inspector.py
+```
+
+When prompted, enter `y` to request the additional connection listing or `n` to skip it. Depending on your operating system and permissions, `psutil.net_connections()` may be incomplete or raise `AccessDenied`. The report is written locally under `Reports/`, which is ignored by Git.
+
+## Interpreting the output
+
+**A non-standard destination port does not mean an attack.** Applications commonly use ports outside this small reference list, and legitimate connections may be flagged. The project checks the **remote (destination) port** of established IP connections, not the local ephemeral port. The fixed `LOW` / `MEDIUM` / `HIGH` result uses only simple CPU, memory, and port-count thresholds; it is a diagnostic learning heuristic, **not evidence of intrusion or a trustworthy security risk score**. If the optional network scan is skipped or unavailable, the displayed priority does not represent a complete assessment.
+
+This script is read-only for inspection. Review exported reports before sharing because they can contain system details.
+
+## Known limitations
+
+- Some process/connection details require elevated permissions; do not grant them without understanding the consequences
+- The tool samples usage at a point in time and does not perform continuous monitoring
+- Its port reference list is incomplete, and its priority thresholds are arbitrary
+- Process listing order is not a ranking of suspicious behavior
+
+## Next improvements
+
+- Add automated tests around the heuristic and connection filtering
+- Distinguish skipped/denied network inspection from a completed scan in the output
+- Add CLI flags for limiting displayed processes and exporting reports
