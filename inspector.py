@@ -112,6 +112,7 @@ def detect_suspicious_connections():
     print("SUSPICIOUS ACTIVITY CHECK")
     print("-" * 50)
 
+    # Informational reference list only: an unfamiliar port is not evidence of malicious activity.
     common_ports = {
         20, 21, 22, 23, 25, 53, 67, 68, 80, 110, 123,
         135, 139, 143, 161, 389, 443, 445, 587,
@@ -129,15 +130,15 @@ def detect_suspicious_connections():
 
     for conn in connections:
         if conn.laddr and conn.raddr and conn.status == "ESTABLISHED":
-            port = conn.laddr.port
+            port = conn.raddr.port
             remote_ip = conn.raddr.ip
 
             if port not in common_ports:
-                print(f"[!] Unusual port detected: {port} -> {remote_ip}")
+                print(f"[i] Non-standard destination port: {remote_ip}:{port} (review if unexpected)")
                 unusual_count += 1
 
     if unusual_count == 0:
-        print("No unusual ports detected.")
+        print("No connections using ports outside the reference list were detected.")
 
     print("=" * 50)
 
@@ -235,7 +236,7 @@ def main():
 
     risk = calculate_risk_score(cpu_usage, ram_usage, unusual_ports)
 
-    print(f"Risk Level: {risk}")
+    print(f"Diagnostic review priority (heuristic, not a threat verdict): {risk}")
     print("=" * 50)
 
     report_lines.append("System & Network Inspector Report")
@@ -244,7 +245,7 @@ def main():
     report_lines.append(f"RAM Usage: {ram_usage}%")
     report_lines.append(f"Advanced Network Scan: {'Yes' if advanced_scan == 'y' else 'No'}")
     report_lines.append(f"Unusual Ports Detected: {unusual_ports}")
-    report_lines.append(f"Risk Level: {risk}")
+    report_lines.append(f"Diagnostic review priority (heuristic): {risk}")
 
     save_report(report_lines)
 
